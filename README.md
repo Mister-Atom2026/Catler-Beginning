@@ -73,3 +73,17 @@ python main.py
 > ```bash
 > pip install ffpyplayer
 > ```
+
+
+## Python 3.13 (важливо)
+
+У вас `Python 3.13` — це ок для запуску самого застосунку, але на Windows часто буває проблема саме з відео-провайдером (`Video Provider: null(...)`).
+
+Що робити:
+1. Спробуйте у вашому `.venv`:
+   ```bash
+   pip install --upgrade pip setuptools wheel
+   pip install "kivy[full]" ffpyplayer
+   ```
+2. Якщо `ffpyplayer` не ставиться або відео все одно `null` — використайте `Python 3.12` для повної роботи відео (intro/game ролики), а 3.13 залиште для розробки логіки/UI.
+3. Поточний код вже зроблений так, що при проблемах з відео не має падати: intro/game тихо пропускаються.
