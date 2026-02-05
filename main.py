@@ -49,13 +49,13 @@ texts = {
 # VHS-ефект: зерно + scanlines
 class VHSNoiseEffect(EffectBase):
     glsl = """
-    uniform float time;
+    uniform float u_time;
 
     vec4 effect(vec4 color, sampler2D texture, vec2 tex_coords, vec2 pixel_coords)
     {
         vec4 original = texture2D(texture, tex_coords);
 
-        float noise = fract(sin(dot(tex_coords + vec2(time * 0.08, time * 0.03), vec2(12.9898, 78.233))) * 43758.5453);
+        float noise = fract(sin(dot(tex_coords + vec2(u_time * 0.08, u_time * 0.03), vec2(12.9898, 78.233))) * 43758.5453);
         float grain_strength = 0.09;
         original.rgb += (noise - 0.5) * grain_strength;
 
@@ -146,11 +146,17 @@ class MenuScreen(Screen):
         self.vhs_effect = VHSNoiseEffect()
         self._noise_event = None
         self._flicker_event = None
+        self._effect_time = 0.0
+        self.vhs_effect.uniforms["u_time"] = 0.0
         super().__init__(**kwargs)
 
     def on_kv_post(self, base_widget):
         # Встановлюємо ефект після побудови KV, щоб уникнути None в effects
         self.ids.effect_layer.effects = [self.vhs_effect]
+
+        app = App.get_running_app()
+        self.ids.bg1.source = app.get_asset_path("menu_bg_1.png") or ""
+        self.ids.bg2.source = app.get_asset_path("menu_bg_2.png") or ""
 
     def on_enter(self):
         self.update_texts()
@@ -168,10 +174,12 @@ class MenuScreen(Screen):
             self._flicker_event = None
 
     def update_effect_time(self, dt):
-        t = self.vhs_effect.uniforms.get("time", 0.0)
-        self.vhs_effect.uniforms["time"] = t + dt
+        self._effect_time += dt
+        self.vhs_effect.uniforms["u_time"] = self._effect_time
 
     def flicker_image(self, dt):
+        if not self.ids.bg2.source:
+            return
         anim = Animation(opacity=1, duration=0.2) + Animation(opacity=0, duration=0.3)
         anim.start(self.ids.bg2)
 
@@ -352,7 +360,7 @@ KV = """
             FloatLayout:
                 Image:
                     id: bg1
-                    source: "assets/menu_bg_1.png"
+                    source: ""
                     size_hint: 0.65, 0.85
                     pos_hint: {"center_x": 0.70, "center_y": 0.50}
                     allow_stretch: True
@@ -360,7 +368,7 @@ KV = """
 
                 Image:
                     id: bg2
-                    source: "assets/menu_bg_2.png"
+                    source: ""
                     size_hint: 0.65, 0.85
                     pos_hint: {"center_x": 0.70, "center_y": 0.50}
                     allow_stretch: True
@@ -435,6 +443,12 @@ class CatlerApp(App):
 
         Clock.schedule_once(lambda dt: self.check_intro(sm), 0.2)
         return sm
+
+    def get_asset_path(self, filename):
+        path = os.path.join("assets", filename)
+        if os.path.exists(path):
+            return path
+        return None
 
     def get_video_path(self, filename):
         candidates = [

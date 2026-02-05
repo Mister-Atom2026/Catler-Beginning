@@ -53,3 +53,23 @@ python main.py
 ## iOS
 
 Для iOS потрібен macOS і toolchain `kivy-ios`.
+
+
+## Запуск у PyCharm
+
+1. Відкрийте проєкт у PyCharm.
+2. Створіть/оберіть інтерпретатор `.venv` (Python 3.10+).
+3. Встановіть залежності:
+   ```bash
+   pip install "kivy[full]"
+   ```
+4. Переконайтесь, що папка `assets/` існує (додаток також створить `assets/` і `assets/videos/` автоматично).
+5. Створіть Run Configuration типу **Python**:
+   - Script path: `main.py`
+   - Working directory: корінь проєкту
+6. Запустіть конфігурацію (**Run**).
+
+> Якщо бачите `Video Provider: null(...)`, встановіть ffpyplayer:
+> ```bash
+> pip install ffpyplayer
+> ```
