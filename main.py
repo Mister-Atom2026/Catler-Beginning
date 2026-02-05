@@ -7,7 +7,7 @@ from kivy.config import ConfigParser
 from kivy.core.audio import SoundLoader
 from kivy.core.window import Window
 from kivy.lang import Builder
-from kivy.properties import ObjectProperty, StringProperty
+from kivy.properties import StringProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.effectwidget import EffectBase
@@ -142,13 +142,15 @@ class SettingsScreen(Screen):
 
 
 class MenuScreen(Screen):
-    vhs_effect = ObjectProperty(None)
-
     def __init__(self, **kwargs):
-        super().__init__(**kwargs)
         self.vhs_effect = VHSNoiseEffect()
         self._noise_event = None
         self._flicker_event = None
+        super().__init__(**kwargs)
+
+    def on_kv_post(self, base_widget):
+        # Встановлюємо ефект після побудови KV, щоб уникнути None в effects
+        self.ids.effect_layer.effects = [self.vhs_effect]
 
     def on_enter(self):
         self.update_texts()
@@ -343,9 +345,9 @@ KV = """
                 pos: self.pos
 
         EffectWidget:
+            id: effect_layer
             size: root.size
             pos: root.pos
-            effects: [root.vhs_effect]
 
             FloatLayout:
                 Image:
